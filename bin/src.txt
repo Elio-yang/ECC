@@ -1,0 +1,20 @@
+hello world this is a test file line 1
+
+int j=0;
+// mov ax,15
+// push ax
+// mov ax,21
+// add ax,sp
+// push ax
+// exit
+// should give 36.
+
+text[j++]=IMM;
+text[j++]=15;
+text[j++]=PUSH;
+text[j++]=IMM;
+text[j++]=21;
+text[j++]=ADD;
+text[j++]=PUSH;
+text[j++]=EXIT;
+pc=text;
