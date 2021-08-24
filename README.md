@@ -6,5 +6,5 @@ Developed using CLION
 - cmake version 3.13.4
 - gcc version 8.3.0 (Debian 8.3.0-6)
 
-You could change the CMakeList.txt you generate your own makefile.
+You could change the CMakeList.txt to generate your own makefile.
 
