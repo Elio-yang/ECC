@@ -1,5 +1,5 @@
 # ECC
-An tiny C compiler and interpreter based on VM.
+ECC : A tiny C compiler and interpreter based on VM.
 Developed using CLION 
 # Build
 - Debian 8.3.0-6
