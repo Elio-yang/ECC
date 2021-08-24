@@ -44,7 +44,8 @@ int64_t token_val;
 int64_t * symbols;
 // currently parsed
 int64_t * parse_id;
-
+//track of main
+int64_t *p_main;
 
 int32_t main(int argc , char *argv[])
 {
@@ -54,6 +55,7 @@ int32_t main(int argc , char *argv[])
                 return ret;
         }
         reg_init();
+        kw_parse();
         program();
         return (int32_t)eval();
 }

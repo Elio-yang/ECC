@@ -7,7 +7,7 @@
 #ifndef ECC_LEXICAL_H
 #define ECC_LEXICAL_H
 #include "ecc-def.h"
-
+#include "IS.h"
 //L stands for logical or less
 enum{
         Number=64,
@@ -81,7 +81,16 @@ enum {
         Size
 };
 
+
+//typed of vars/funcs
+enum{
+        CHAR,
+        INT,
+        PTR
+};
+
+
 void get_next();
 int64_t read_src(const char *filename);
-
+void kw_parse();
 #endif //ECC_LEXICAL_H

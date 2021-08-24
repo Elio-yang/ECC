@@ -32,9 +32,9 @@
 
 
 
-int64_t *text,*old_text,*stack;
-int8_t *data;
-
+extern int64_t *text,*old_text,*stack;
+extern char *data;
+extern int64_t *symbols;
 extern int64_t pool_size;
 
 
@@ -53,6 +53,10 @@ int32_t vm_alloc_mem()
                 MEM_ERR(errno);
                 goto err3;
         }
+        if((symbols= malloc(pool_size))==nullptr){
+                MEM_ERR(errno);
+                goto err4;
+        }
         goto correct;
 
         //memory error handle
@@ -65,12 +69,18 @@ err3:
         free(text);
         free(data);
         goto err1;
+err4:
+        free(text);
+        free(data);
+        free(stack);
+        goto err1;
 
         correct:
         //initial memory space
         memset(text,0,pool_size);
         memset(data,0,pool_size);
         memset(stack,0,pool_size);
+        memset(symbols,0,pool_size);
         return done;
 }
 

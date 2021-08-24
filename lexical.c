@@ -9,6 +9,8 @@
                     +-------+                      +--------+
 --> source code --> | lexer | --> token stream --> | parser | --> assembly
                     +-------+                      +--------+
+
+                    using LL(1)
 */
 //current token
 extern int64_t token;
@@ -24,7 +26,8 @@ extern int64_t *symbols;
 extern int64_t *parse_id;
 // data section
 extern char *data;
-
+//pointer to main
+extern int64_t *p_main;
 //get next token
 void get_next()
 {
@@ -76,6 +79,23 @@ void get_next()
                                         parse_id = parse_id + Size;
                                 }
                                 //a new identifier
+                                /*
+                                 what we are here is that, struct is not allowed
+                                 in this ecc ,so we use a array refed by a pointer
+                                 which is parse_id=symbol. As the order in the definition
+                                 of identifier in lexical.h, the array is arranged
+                                 in this way:
+                                 symbol
+                                 +-----+----+----+----+----+-----+-------+-------+-------+
+                                 |token|hash|name|type|cate|value|shadowt|shadowc|shadowv|
+                                 +-----+----+----+----+----+-----+-------+-------+-------+
+                                 ^                                                       ^
+                                 |---------------->Size*sizeof(*parse_id)<---------------|
+                                 parse_id[Token]
+                                 so can be referenced by this way
+                                 parse_id[some_field]
+                                 and this will used when parsing keywords and system 'calls'
+                                 */
                                 parse_id[Name] = (int64_t) last_pos;
                                 parse_id[Hash] = hash;
                                 parse_id[Token] = Identifier;
@@ -131,7 +151,7 @@ void get_next()
                                   p_src
                                    |
                                    v
-                          [...]["][b][1][2][\0]
+                          [...]["][b][1][2][...][\0]
                                 ^
                                 |
                               token
@@ -183,17 +203,143 @@ void get_next()
                                 token=Div;
                                 return;
                         }
-                } else if()
-
-
-
+                } else if(token=='='){
+                        // = and ==
+                        if(*p_src=='='){
+                                p_src++;
+                                token=Eq;
+                        }else{
+                                token=Assign;
+                        }
+                        return;
+                }else if(token=='+'){
+                        //+ and ++
+                        if(*p_src=='+'){
+                                p_src++;
+                                token=Inc;
+                        }else{
+                                token=Add;
+                        }
+                        return;
+                }else if(token=='-'){
+                        //- and --
+                        if(*p_src=='-'){
+                                p_src++;
+                                token=Dec;
+                        }else{
+                                token=Sub;
+                        }
+                        return;
+                }else if(token =='!'){
+                        //!=
+                        if(*p_src=='='){
+                                p_src++;
+                                token=Ne;
+                        }
+                        return;
+                }else if(token=='<'){
+                        //< and <= ,<<
+                        if(*p_src=='='){
+                                p_src++;
+                                token=Leq;
+                        }else if(*p_src=='<'){
+                                p_src++;
+                                token=Shl;
+                        }else{
+                                token=Lthan;
+                        }
+                        return;
+                }else if(token=='>'){
+                        // >= >>
+                        if(*p_src=='='){
+                                p_src++;
+                                token=Geq;
+                        }else if(*p_src=='>'){
+                                p_src++;
+                                token=Shr;
+                        }else {
+                                token=Gthan;
+                        }
+                }else if(token=='|'){
+                        //| and ||
+                        if(*p_src=='|'){
+                                p_src++;
+                                token=Lor;
+                        }else{
+                                token=Or;
+                        }
+                        return;
+                }else if(token=='&'){
+                        // & and  &&
+                        if(*p_src=='&'){
+                                p_src++;
+                                token=Land;
+                        }else{
+                                token=And;
+                        }
+                        return;
+                }else if(token=='^'){
+                        token=Xor;
+                        return;
+                }else if(token=='%'){
+                        token =Xor;
+                }else if(token=='*'){
+                        token=Mul;
+                        return;
+                }else if(token=='['){
+                        token=Bracket;
+                        return;
+                }else if(token=='?'){
+                        token=Cond;
+                        return;
+                }else if(token=='~'||
+                         token==';'||
+                         token=='{'||
+                         token=='}'||
+                         token=='('||
+                         token==')'||
+                         token=='['||
+                         token==','||
+                         token==':'){
+                        return;
+                }
         }
+}
+
+//used for keyword
+void kw_parse()
+{
+        //now just analysis these keywords
+        p_src="char else enum if int return sizeof while "
+              "open read close printf malloc memset memcmp exit void main";
+        int i=CHAR;
+        // notice the enum order
+        // add kws
+        while (i<=While){
+                get_next();
+                parse_id[Token]=i++;
+        }
+        i=OPEN;
+        // add system 'call'
+        while (i<=EXIT){
+                get_next();
+                parse_id[Category]=System;
+                parse_id[Type]=INT;
+                parse_id[Value]=i++;
+        }
+        get_next();
+        parse_id[Token]=CHAR;
+        get_next();
+        p_main=parse_id;
 
 
 }
 
+
+
 int64_t read_src(const char *filename)
 {
+        lines=1;
         int fd;
         if ((fd = open(filename, O_RDWR | O_CREAT)) == -1) {
                 IO_ERR(errno);
